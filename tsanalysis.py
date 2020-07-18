@@ -2,9 +2,14 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+
 class Tsdf:
-    #TODO: write docstrings
     def __init__(self, df, dt_column):
+        """
+        Creates a time-series data frame with basic attributes and methods
+        :param df: A time-series data frame
+        :param dt_column: The time series column name in df
+        """
         assert dt_column in df.columns, f"{dt_column} column not found in dataframe."
         assert isinstance(df[dt_column][0], pd.Timestamp), f"{dt_column} not a datetime field"
 
@@ -14,6 +19,11 @@ class Tsdf:
         self.max_date = df[dt_column].max()
 
     def find_gaps(self, freq="1 day"):
+        """
+        Find gaps in the time-series
+        :param freq: Expected frequency of time-series
+        :return: Return gaps in time-series, if any
+        """
         lag_1 = self.df.dt.shift(periods=1)
         delta = (self.df.dt - lag_1)[1:]
 
@@ -23,10 +33,15 @@ class Tsdf:
             print(f"Time series has gaps")
 
         delta_index = delta[delta != freq].index
-        delta_index = delta_index.append(delta_index-1)
+        delta_index = delta_index.append(delta_index - 1)
         return self.df.iloc[delta_index]
 
     def ts_plot(self, y):
+        """
+        Create simple uni-variate line plot of time series
+        :param y: y-axis plotting variable
+        :return: Returns line plot
+        """
         plt.style.use("seaborn")
         plt.plot(self.dt_column, y, data=self.df)
         plt.title(f"Plot of {y}")
@@ -35,8 +50,16 @@ class Tsdf:
         plt.show();
 
     def ts_heatmap(self, fill, y_val, x_val):
-        assert y_val in ["day", "month", "year"]
-        assert x_val in ["month", "day", "hour"]
+        """
+        Create heatmap using two time-series axes and a fill variable
+
+        :param fill: Variable used to fill heatmap
+        :param y_val: y-axis date-time component. Can be either day, month, or year
+        :param x_val: x-axis date-time component. Can be either month, day or hour
+        :return: Returns heatmap
+        """
+        assert y_val in ["day", "month", "year"], "y_val must be either day, month, or year"
+        assert x_val in ["month", "day", "hour"], "x_val must be either month, day or hour"
 
         result = self.df
         if y_val == "day":
@@ -54,14 +77,31 @@ class Tsdf:
             result[x_val] = result[self.dt_column].dt.hour
 
         result = result.pivot_table(index=y_val, columns=x_val, values=fill, aggfunc="sum")
-        sns.heatmap(result)
+        if y_val == "month":
+            result.index = pd.CategoricalIndex(result.index,
+                                               categories=["January", "February", "March", "April", "May", "June",
+                                                           "July", "August", "September", "October", "November",
+                                                           "December"])
+            result.sort_index(inplace = True)
+
+        sns.heatmap(result, cmap="YlOrRd")
         plt.title(f"Heatmap of {fill}")
         plt.show();
 
-
-
-
-
-
-
-
+    def ts_decomp(self, components):
+        """
+        Decomposes time-series into its constituent parts appends to dataframe as columns
+        :param components: List of time-series components to be used for decomposition
+        :return: None
+        """
+        assert isinstance(components, list), "components must be a list of datetime components"
+        if "year" in components:
+            self.df["year"] = self.df[self.dt_column].dt.year
+        if "month" in components:
+            self.df["month"] = self.df[self.dt_column].dt.month_name()
+        if "weekday" in components:
+            self.df["weekday"] = self.df[self.dt_column].dt.day_name()
+        if "day" in components:
+            self.df["day"] = self.df[self.dt_column].dt.day
+        if "hour" in components:
+            self.df["hour"] = self.df[self.dt_column].dt.hour
