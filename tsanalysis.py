@@ -67,9 +67,9 @@ class Tsdf:
     def ts_heatmap(self, fill, y_val, x_val):
         """Create heatmap using two time-series axes and a fill variable
         Args:
-        fill (string): Variable used to fill heatmap
-        y_val (string): y-axis date-time component. Can be either day, month, or year
-        x_val (string): x-axis date-time component. Can be either month, day or hour
+            fill (string): Variable used to fill heatmap
+            y_val (string): y-axis date-time component. Can be either day, month, or year
+            x_val (string): x-axis date-time component. Can be either month, day or hour
         Returns:
             Returns heatmap
         """
@@ -104,10 +104,11 @@ class Tsdf:
         plt.show();
 
     def ts_decomp(self, components):
-        """
-        Decomposes time-series into its constituent parts appends to dataframe as columns
-        :param components: List of time-series components to be used for decomposition
-        :return: None
+        """Decomposes time-series into its constituent parts appends to dataframe as columns
+        Args:
+            components (list): List of time-series components to be used for decomposition
+        Returns:
+            None
         """
         assert isinstance(components, list), "components must be a list of datetime components"
         if "year" in components:
