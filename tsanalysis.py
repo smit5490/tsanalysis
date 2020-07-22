@@ -45,7 +45,7 @@ class Tsdf:
         delta_index = delta_index.append(delta_index - 1)
         return self.df.iloc[delta_index]
 
-    def ts_plot(self, y, start_time = self.min_date, end_time = self.max_date):
+    def ts_plot(self, y, start_time=None, end_time=None):
         """Create simple uni-variate line plot of time series
         Args:
             y (string): y-axis plotting variable
@@ -54,8 +54,10 @@ class Tsdf:
         Returns:
             Returns line plot
         """
-        start_time = pd.to_datetime(start_time)
-        end_time = pd.to_datetime(end_time)
+        if start_time is None:
+            start_time = self.min_date
+        if end_time is None:
+            end_time = self.max_date
         plt.style.use("seaborn")
         plt.plot(self.dt_column, y, data=self.df[(self.df[self.dt_column] >= start_time) &
                                                  (self.df[self.dt_column] <= end_time)])
