@@ -4,12 +4,20 @@ import seaborn as sns
 
 
 class Tsdf:
+    """ Creates a time-series data frame with basic attributes and methods
+    Args:
+        df (dataframe): A time-series data frame
+        dt_column (string): The time-series column name in df
+
+    Attributes:
+        df (dataframe): A time-series data frame
+        dt_column (string): The time-series column name in df
+        min_date (date): Minimum date in time-series.
+        max_date (date): Maximum date in time-series.
+
+    """
     def __init__(self, df, dt_column):
-        """
-        Creates a time-series data frame with basic attributes and methods
-        :param df: A time-series data frame
-        :param dt_column: The time series column name in df
-        """
+
         assert dt_column in df.columns, f"{dt_column} column not found in dataframe."
         assert isinstance(df[dt_column][0], pd.Timestamp), f"{dt_column} not a datetime field"
 
@@ -19,10 +27,11 @@ class Tsdf:
         self.max_date = df[dt_column].max()
 
     def find_gaps(self, freq="1 day"):
-        """
-        Find gaps in the time-series
-        :param freq: Expected frequency of time-series
-        :return: Return gaps in time-series, if any
+        """ Find gaps in the time-series
+        Args:
+            freq (string): Expected frequency of time-series
+        Returns:
+            Return gaps in time-series, if any
         """
         lag_1 = self.df.dt.shift(periods=1)
         delta = (self.df.dt - lag_1)[1:]
@@ -36,27 +45,33 @@ class Tsdf:
         delta_index = delta_index.append(delta_index - 1)
         return self.df.iloc[delta_index]
 
-    def ts_plot(self, y):
+    def ts_plot(self, y, start_time = self.min_date, end_time = self.max_date):
+        """Create simple uni-variate line plot of time series
+        Args:
+            y (string): y-axis plotting variable
+            start_time (datetime): first datetime to plot
+            end_time (datetime): last datetime to plot
+        Returns:
+            Returns line plot
         """
-        Create simple uni-variate line plot of time series
-        :param y: y-axis plotting variable
-        :return: Returns line plot
-        """
+        start_time = pd.to_datetime(start_time)
+        end_time = pd.to_datetime(end_time)
         plt.style.use("seaborn")
-        plt.plot(self.dt_column, y, data=self.df)
+        plt.plot(self.dt_column, y, data=self.df[(self.df[self.dt_column] >= start_time) &
+                                                 (self.df[self.dt_column] <= end_time)])
         plt.title(f"Plot of {y}")
         plt.xlabel(self.dt_column)
         plt.ylabel(y)
         plt.show();
 
     def ts_heatmap(self, fill, y_val, x_val):
-        """
-        Create heatmap using two time-series axes and a fill variable
-
-        :param fill: Variable used to fill heatmap
-        :param y_val: y-axis date-time component. Can be either day, month, or year
-        :param x_val: x-axis date-time component. Can be either month, day or hour
-        :return: Returns heatmap
+        """Create heatmap using two time-series axes and a fill variable
+        Args:
+        fill (string): Variable used to fill heatmap
+        y_val (string): y-axis date-time component. Can be either day, month, or year
+        x_val (string): x-axis date-time component. Can be either month, day or hour
+        Returns:
+            Returns heatmap
         """
         assert y_val in ["day", "month", "year"], "y_val must be either day, month, or year"
         assert x_val in ["month", "day", "hour"], "x_val must be either month, day or hour"
